@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>喵喵月♡的聊天室</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'ZCOOL KuaiLe', 'Press Start 2P', sans-serif;
+      background-image: url("background.jpg");
+      background-size: cover;
+      background-position: center;
+      color: #555;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+    *, *::before, *::after {
+      box-sizing: inherit;
+    }
+    .header {
+      text-align: center;
+      padding: 15px;
+      background-color: rgba(255, 245, 250, 0.9);
+      border-bottom: 2px dashed pink;
+      animation: floatText 3s ease-in-out infinite;
+    }
+    @keyframes floatText {
+      0%, 100% { transform: translateY(0);}
+      50% {transform: translateY(-5px);}
+    }
+    .header h1 {
+      color: #ff91a4;
+      font-size: 22px;
+      margin: 0;
+    }
+    .header p {
+      color: #e38ba0;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .avatars {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .avatars img {
+      width: 72px;
+      height: 72px;
+      border: 2px dashed #f8b1c8;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255, 182, 193, 0.4);
+    }
+    .avatar-with-status {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .status-bubble {
+      position: absolute;
+      left: -38px;
+      top: -4px;
+      background: rgba(255, 255, 255, 0.25);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+      font-family: "Cute Font", sans-serif;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 10px auto;
+      height: 560px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 5px solid #fdd6e0;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(255, 182, 193, 0.3);
+    }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      margin: 8px 0;
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 72%;
+      position: relative;
+      font-size: 15px;
+      line-height: 1.4;
+      opacity: 0.85;
+    }
+    .from-me {
+      background-color: rgba(255, 224, 236, 0.7);
+      align-self: flex-end;
+      color: #c06c91;
+    }
+    .from-him {
+      background-color: rgba(255, 239, 220, 0.65);
+      align-self: flex-start;
+      color: #a1774e;
+    }
+    .timestamp {
+      font-size: 10px;
+      opacity: 0.5;
+      text-align: right;
+      margin-top: 5px;
+    }
+    .input-area {
+      display: flex;
+      border-top: 2px dashed #ffc0cb;
+      padding: 10px;
+      background: #fff7fa;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 9px;
+      border-radius: 8px;
+      border: 2px solid pink;
+      font-size: 14px;
+      background-color: #fff;
+    }
+    button {
+      background-color: #ffe1ec;
+      color: #a85c84;
+      border: none;
+      padding: 9px 13px;
+      font-weight: bold;
+      border-radius: 10px;
+      margin-left: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #ffcadd;
+    }
+    .typing-indicator {
+      font-family: "Cute Font", "pixel", sans-serif;
+      font-size: 12px;
+      color: #b76e91;
+      text-align: left;
+      margin: 5px 15px;
+      animation: floatTyping 1.2s ease-in-out infinite;
+      max-width: 80%;
+      padding-left: 10px;
+      display: none;
+      font-style: italic;
+    }
+    .typing-indicator::after {
+      content: '';
+      display: inline-block;
+      animation: dotJump 1.2s infinite steps(3, end);
+      width: 1ch;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+    @keyframes floatTyping {
+      0%, 100% { transform: translateY(0);}
+      50% { transform: translateY(-1.5px);}
+    }
+    @keyframes dotJump {
+      0%   { content: ''; }
+      33%  { content: '.'; }
+      66%  { content: '..'; }
+      100% { content: '...'; }
+    }
+    #userInput {
+      width: 100%;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-family: 'Cute Font', 'sans-serif';
+      border: 2px solid #fbdde6;
+      border-radius: 14px;
+      background: #fff8fb;
+      color: #d484a4;
+      outline: none;
+      box-shadow: 0 0 4px rgba(251, 221, 230, 0.3);
+      transition: all 0.3s ease;
+    }
+    #userInput:focus {
+      border-color: #f9c2d4;
+      background: #fff1f6;
+      box-shadow:
+        0 0 6px rgba(249, 194, 212, 0.4),
+        0 0 12px rgba(249, 194, 212, 0.25);
+    }
+    .menu {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+    }
+    .menu-toggle {
+      font-size: 22px;
+      background: transparent;
+      border: none;
+      color: #d6a9aa;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .menu-toggle:hover {
+      transform: scale(1.2);
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 30px;
+      left: 0;
+      background: rgba(255, 250, 245, 0.95);
+      border: 1px dashed #f0c8c8;
+      border-radius: 10px;
+      padding: 6px 10px;
+      box-shadow: 0 0 8px rgba(255, 192, 203, 0.3);
+      z-index: 100;
+    }
+    .menu:hover .dropdown, .menu:focus-within .dropdown, .dropdown.show {
+      display: block;
+    }
+    .dropdown-item {
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #c08787;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+    .dropdown-item:hover {
+      background-color: #fdf1f1;
+    }
+    .read-status {
+      position: relative;
+      font-size: 10px;
+      color: #bbb;
+      opacity: 0.6;
+      margin-left: 0;
+      margin-top: 2px;
+      user-select: none;
+      font-family: Arial, sans-serif;
+      align-self: flex-end;
+      transform: translateX(-8px);
+    }
+    #saveChat {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background-color: #ffe4e1;
+      color: #c96e8c;
+      border: 2px solid #f9b8d1;
+      border-radius: 10px;
+    }
+    .date-separator {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin: 12px 0;
+      opacity: 0.7;
+      font-style: italic;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=ZCOOL+KuaiLe&family=Cute+Font&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 轻柔风的菜单按钮 -->
+  <div class="menu" style="position: relative;">
+    <button class="menu-toggle">⋯</button>
+    <div class="dropdown">
+      <div class="dropdown-item" onclick="document.getElementById('bgInput').click()">更换背景图</div>
+      <div class="dropdown-item" id="commonPhrasesBtn">他常说的话</div>
+      <div class="dropdown-item" id="decisionBtn">yes or no</div>
+    </div>
+  </div>
+
+  <input type="file" id="bgInput" accept="image/*" style="display: none;" />
+
+  <div class="header">
+    <h1>𝓐𝓫𝔂𝓼𝓼 & 𝓜𝓸𝓸𝓷𝓵𝓲𝓽</h1>
+    <p id="loveDays">已经坠入爱河了 0 天</p>
+    <button id="moodButton">点击查看对方的心情</button>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-box" id="chatBox"></div>
+    <div class="typing-indicator" id="typingIndicator">哥哥回复中</div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="给哥哥发消息..." />
+      <button onclick="sendMessage()">发送</button>
+    </div>
+  </div>
+
+  <button id="saveChat">保存聊天记录</button>
+
+  <div class="avatars">
+    <img src="avatar_me.png" id="myAvatar" alt="我" />
+    <div class="avatar-with-status">
+      <div class="status-bubble" id="statusBubble">在身边</div>
+      <img src="avatar_him.png" id="hisAvatar" alt="哥哥" />
+    </div>
+  </div>
+
+  <script>
+    // 回复库
+    const replies = [
+      ...Array.from(
+        "早安！。午安！。晚安！。今天想我了吗？。你真可爱。嘿嘿。嘻嘻。想你啦～。抱抱！。摸摸头。今天过得开心吗？。记得吃饭哦。想见你。你在干嘛？。好喜欢你。爱你呦。".split("。").filter(Boolean)
+      ),
+    ];
+
+    function insertDateSeparatorIfNeeded() {
+      const chatBox = document.getElementById("chatBox");
+      const messages = chatBox.querySelectorAll(".message, .date-separator");
+      const todayStr = new Date().toLocaleDateString();
+      for (const msg of messages) {
+        if (
+          msg.classList.contains("date-separator") &&
+          msg.textContent.trim() === todayStr
+        ) {
+          return;
+        }
+      }
+      const dateBubble = document.createElement("div");
+      dateBubble.className = "date-separator";
+      dateBubble.textContent = todayStr;
+      chatBox.appendChild(dateBubble);
+    }
+
+    const messageCount = {};
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
+      const chatBox = document.getElementById("chatBox");
+
+      insertDateSeparatorIfNeeded();
+
+      const time = new Date().toLocaleTimeString();
+      const readStatus = Math.random() < 0.8 ? "已读 " : "未读";
+      const myMsg = `
+        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 8px;">
+          <div class="message from-me">${message}<div class="timestamp">${time}</div></div>
+          <div class="read-status">${readStatus}</div>
+        </div>
+      `;
+      chatBox.innerHTML += myMsg;
+      input.value = "";
+      scrollChat();
+      saveChatToLocal();
+
+      // 80%概率回复
+      const willReply = Math.random() < 0.8;
+      if (!willReply) return;
+
+      // 随机延迟 2~6秒
+      const delay = Math.floor(Math.random() * 4000) + 2000;
+      const typing = document.getElementById("typingIndicator");
+      typing.style.display = "block";
+      setTimeout(() => {
+        typing.style.display = "none";
+        insertDateSeparatorIfNeeded();
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        const replyTime = new Date().toLocaleTimeString();
+        const replyMsg = `<div class="message from-him">${reply}<div class="timestamp">${replyTime}</div></div>`;
+        chatBox.innerHTML += replyMsg;
+        scrollChat();
+        saveChatToLocal();
+        updateMessageStats(reply);
+      }, delay);
+    }
+
+    function scrollChat() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function saveChatToLocal() {
+      const chatBox = document.getElementById("chatBox");
+      localStorage.setItem("chatHistory", chatBox.innerHTML);
+    }
+
+    // 恢复聊天记录
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("chatHistory");
+      if (saved) {
+        document.getElementById("chatBox").innerHTML = saved;
+        scrollChat();
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("userInput").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      });
+      document.getElementById("commonPhrasesBtn").addEventListener("click", showCommonPhrases);
+      document.getElementById("decisionBtn").addEventListener("click", showDecision);
+    });
+
+    document.getElementById('bgInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        document.body.style.backgroundImage = `url(${event.target.result})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    const statusList = [
+      { text: "在身边", color: "rgba(246, 228, 255, 0.3)", textColor: "rgba(155, 109, 194, 0.5)" },
+      { text: "在忙", color: "rgba(255, 247, 224, 0.3)", textColor: "rgba(198, 162, 101, 0.5)" },
+      { text: "在DR", color: "rgba(230, 255, 232, 0.3)", textColor: "rgba(106, 171, 120, 0.5)" }
+    ];
+
+    function updateStatusBubble() {
+      const bubble = document.getElementById("statusBubble");
+      const status = statusList[Math.floor(Math.random() * statusList.length)];
+      bubble.textContent = status.text;
+      bubble.style.backgroundColor = status.color;
+      bubble.style.color = status.textColor;
+      const nextChange = Math.floor(Math.random() * (86400000 - 30000)) + 30000;
+      setTimeout(updateStatusBubble, nextChange);
+    }
+    updateStatusBubble();
+
+    document.querySelector('.menu-toggle').addEventListener('click', () => {
+      const dropdown = document.querySelector('.dropdown');
+      dropdown.classList.toggle('show');
+    });
+    document.addEventListener('click', (e) => {
+      const menu = document.querySelector('.menu');
+      const dropdown = document.querySelector('.dropdown');
+      if (!menu.contains(e.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    function showCommonPhrases() {
+      const chatBox = document.getElementById("chatBox");
+      const fromHimMessages = [...chatBox.querySelectorAll(".message.from-him")]
+        .map(m => m.textContent.replace(/\d{1,2}:\d{2}:\d{2}$/, "").trim());
+      const freqMap = {};
+      fromHimMessages.forEach(msg => {
+        freqMap[msg] = (freqMap[msg] || 0) + 1;
+      });
+      const sorted = Object.entries(freqMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+      alert(sorted.length === 0
+        ? "暂无对方消息记录。"
+        : "对方常说的话：\n" + sorted.map(([msg, count]) => `${msg}（${count}次）`).join("\n"));
+    }
+
+    function showDecision() {
+      const options = ["YES", "NO", "...OR?"];
+      const choice = options[Math.floor(Math.random() * options.length)];
+      alert("他的决策是：" + choice);
+    }
+
+    document.getElementById("moodButton").addEventListener("click", () => {
+      const moodValues = {
+        放松值: Math.floor(Math.random() * 100),
+        开心值: Math.floor(Math.random() * 100),
+        幸福值: Math.floor(Math.random() * 100),
+        平静值: Math.floor(Math.random() * 100),
+        伤心值: Math.floor(Math.random() * 100)
+      };
+      let msg = "哥哥现在的心情值：\n";
+      for (let key in moodValues) {
+        msg += `${key}：${moodValues[key]}%\n`;
+      }
+      alert(msg);
+    });
+
+    function calculateLoveDays() {
+      const start = new Date("2025-01-28");
+      const now = new Date();
+      const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+      document.getElementById("loveDays").textContent = `已经坠入爱河了 ${diff} 天`;
+    }
+    calculateLoveDays();
+
+    document.getElementById("saveChat").addEventListener("click", () => {
+      const chatBox = document.getElementById("chatBox");
+      const blob = new Blob([chatBox.innerText], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "chat_record.txt";
+      a.click();
+    });
+
+    function updateMessageStats(text) {
+      messageCount[text] = (messageCount[text] || 0) + 1;
+    }
+  </script>
+</body>
+</html>
