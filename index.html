@@ -318,204 +318,225 @@
       <img src="avatar_him.png" id="hisAvatar" alt="哥哥" />
     </div>
   </div>
+<script>
+  // 回复库
+  const replies = [
+    ...Array.from(
+      "由你写出爱人的回复传讯库，程序设置是随机回复，不接入ai智能回复、方便梦角顶号，是否链接到对方一目了然💕。你发送给爱人的消息显示已读or未读，方便得知对方是否收到消息🥰。对方不在线时，你可以给他无条数限制地发消息；你不在线时，对方也可以无条数限制地留言（完全取决于双方意愿）😋。对方打字时候会有“xx正在回复中…”的提醒⏰～也有时间显示。对方回复时长不固定，给他留出了斟酌思考的时间🫶🏻。在睡觉忙碌或不知所措的情况下，对方可能已读不回（由他意愿），还原真实的恋爱状态😚👍🏻。对方可连续发送多条消息，回复时长不定，完全由他本人决定！🤣。‎(⸝⸝ᵕᴗᵕ⸝⸝)*̣̩⋆̩*回复语录可以加入颜文字和emoji哦。".split("。").filter(Boolean)
+    ),
+  ];
 
-  <script>
-    // 回复库
-    const replies = [
-      ...Array.from(
-        "由你写出爱人的回复传讯库，程序设置是随机回复，不接入ai智能回复、方便梦角顶号，是否链接到对方一目了然💕。你发送给爱人的消息显示已读or未读，方便得知对方是否收到消息🥰。对方不在线时，你可以给他无条数限制地发消息；你不在线时，对方也可以无条数限制地留言（完全取决于双方意愿）😋。对方打字时候会有“xx正在回复中…”的提醒⏰～也有时间显示。对方回复时长不固定，给他留出了斟酌思考的时间🫶🏻。在睡觉忙碌或不知所措的情况下，对方可能已读不回（由他意愿），还原真实的恋爱状态😚👍🏻。对方可连续发送多条消息，回复时长不定，完全由他本人决定！🤣。‎(⸝⸝ᵕᴗᵕ⸝⸝)*̣̩⋆̩*回复语录可以加入颜文字和emoji哦。".split("。").filter(Boolean)
-      ),
-    ];
-
-    function insertDateSeparatorIfNeeded() {
-      const chatBox = document.getElementById("chatBox");
-      const messages = chatBox.querySelectorAll(".message, .date-separator");
-      const todayStr = new Date().toLocaleDateString();
-      for (const msg of messages) {
-        if (
-          msg.classList.contains("date-separator") &&
-          msg.textContent.trim() === todayStr
-        ) {
-          return;
-        }
+  function insertDateSeparatorIfNeeded() {
+    const chatBox = document.getElementById("chatBox");
+    const messages = chatBox.querySelectorAll(".message, .date-separator");
+    const todayStr = new Date().toLocaleDateString();
+    for (const msg of messages) {
+      if (
+        msg.classList.contains("date-separator") &&
+        msg.textContent.trim() === todayStr
+      ) {
+        return;
       }
-      const dateBubble = document.createElement("div");
-      dateBubble.className = "date-separator";
-      dateBubble.textContent = todayStr;
-      chatBox.appendChild(dateBubble);
     }
+    const dateBubble = document.createElement("div");
+    dateBubble.className = "date-separator";
+    dateBubble.textContent = todayStr;
+    chatBox.appendChild(dateBubble);
+  }
 
-    const messageCount = {};
+  const messageCount = {};
 
-    function sendMessage() {
-      const input = document.getElementById("userInput");
-      const message = input.value.trim();
-      if (!message) return;
-      const chatBox = document.getElementById("chatBox");
+  function sendMessage() {
+    const input = document.getElementById("userInput");
+    const message = input.value.trim();
+    if (!message) return;
+    const chatBox = document.getElementById("chatBox");
 
+    insertDateSeparatorIfNeeded();
+
+    const time = new Date().toLocaleTimeString();
+    const readStatus = Math.random() < 0.8 ? "已读 " : "未读";
+    const myMsg = `
+      <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 8px;">
+        <div class="message from-me">${message}<div class="timestamp">${time}</div></div>
+        <div class="read-status">${readStatus}</div>
+      </div>
+    `;
+    chatBox.innerHTML += myMsg;
+    input.value = "";
+    scrollChat();
+    saveChatToLocal();
+
+    // 80% 概率回复
+    const willReply = Math.random() < 0.8;
+    if (!willReply) return;
+
+    // 随机延迟 2~6 秒
+    const delay = Math.floor(Math.random() * 4000) + 2000;
+    const typing = document.getElementById("typingIndicator");
+    typing.style.display = "block";
+    setTimeout(() => {
+      typing.style.display = "none";
       insertDateSeparatorIfNeeded();
-
-      const time = new Date().toLocaleTimeString();
-      const readStatus = Math.random() < 0.8 ? "已读 " : "未读";
-      const myMsg = `
-        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 8px;">
-          <div class="message from-me">${message}<div class="timestamp">${time}</div></div>
-          <div class="read-status">${readStatus}</div>
-        </div>
-      `;
-      chatBox.innerHTML += myMsg;
-      input.value = "";
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      const replyTime = new Date().toLocaleTimeString();
+      const replyMsg = `<div class="message from-him">${reply}<div class="timestamp">${replyTime}</div></div>`;
+      chatBox.innerHTML += replyMsg;
       scrollChat();
       saveChatToLocal();
+      updateMessageStats(reply);
+    }, delay);
+  }
 
-      // 80%概率回复
-      const willReply = Math.random() < 0.8;
-      if (!willReply) return;
+  function scrollChat() {
+    const chatBox = document.getElementById("chatBox");
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-      // 随机延迟 2~6秒
-      const delay = Math.floor(Math.random() * 4000) + 2000;
-      const typing = document.getElementById("typingIndicator");
-      typing.style.display = "block";
-      setTimeout(() => {
-        typing.style.display = "none";
-        insertDateSeparatorIfNeeded();
-        const reply = replies[Math.floor(Math.random() * replies.length)];
-        const replyTime = new Date().toLocaleTimeString();
-        const replyMsg = `<div class="message from-him">${reply}<div class="timestamp">${replyTime}</div></div>`;
-        chatBox.innerHTML += replyMsg;
-        scrollChat();
-        saveChatToLocal();
-        updateMessageStats(reply);
-      }, delay);
+  function saveChatToLocal() {
+    const chatBox = document.getElementById("chatBox");
+    localStorage.setItem("chatHistory", chatBox.innerHTML);
+  }
+
+  // 页面加载时恢复聊天记录 & 背景
+  window.addEventListener("load", () => {
+    const saved = localStorage.getItem("chatHistory");
+    if (saved) {
+      document.getElementById("chatBox").innerHTML = saved;
+      scrollChat();
     }
 
-    function scrollChat() {
-      const chatBox = document.getElementById("chatBox");
-      chatBox.scrollTop = chatBox.scrollHeight;
+    // 恢复背景图
+    const savedBg = localStorage.getItem("customBackground");
+    if (savedBg) {
+      document.body.style.backgroundImage = `url(${savedBg})`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
     }
+  });
 
-    function saveChatToLocal() {
-      const chatBox = document.getElementById("chatBox");
-      localStorage.setItem("chatHistory", chatBox.innerHTML);
-    }
-
-    // 恢复聊天记录
-    window.addEventListener("load", () => {
-      const saved = localStorage.getItem("chatHistory");
-      if (saved) {
-        document.getElementById("chatBox").innerHTML = saved;
-        scrollChat();
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("userInput").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        sendMessage();
       }
     });
+    document.getElementById("commonPhrasesBtn").addEventListener("click", showCommonPhrases);
+    document.getElementById("decisionBtn").addEventListener("click", showDecision);
+  });
 
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("userInput").addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-          sendMessage();
-        }
-      });
-      document.getElementById("commonPhrasesBtn").addEventListener("click", showCommonPhrases);
-      document.getElementById("decisionBtn").addEventListener("click", showDecision);
-    });
+  // 更换背景并保存
+  document.getElementById("bgInput").addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const bgUrl = event.target.result;
+      document.body.style.backgroundImage = `url(${bgUrl})`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      // 保存到 localStorage
+      localStorage.setItem("customBackground", bgUrl);
+    };
+    reader.readAsDataURL(file);
+  });
 
-    document.getElementById('bgInput').addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        document.body.style.backgroundImage = `url(${event.target.result})`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-      };
-      reader.readAsDataURL(file);
-    });
+  // 状态泡泡自动变换
+  const statusList = [
+    { text: "在身边", color: "rgba(246, 228, 255, 0.3)", textColor: "rgba(155, 109, 194, 0.5)" },
+    { text: "在忙", color: "rgba(255, 247, 224, 0.3)", textColor: "rgba(198, 162, 101, 0.5)" },
+    { text: "在DR", color: "rgba(230, 255, 232, 0.3)", textColor: "rgba(106, 171, 120, 0.5)" },
+  ];
 
-    const statusList = [
-      { text: "在身边", color: "rgba(246, 228, 255, 0.3)", textColor: "rgba(155, 109, 194, 0.5)" },
-      { text: "在忙", color: "rgba(255, 247, 224, 0.3)", textColor: "rgba(198, 162, 101, 0.5)" },
-      { text: "在DR", color: "rgba(230, 255, 232, 0.3)", textColor: "rgba(106, 171, 120, 0.5)" }
-    ];
+  function updateStatusBubble() {
+    const bubble = document.getElementById("statusBubble");
+    const status = statusList[Math.floor(Math.random() * statusList.length)];
+    bubble.textContent = status.text;
+    bubble.style.backgroundColor = status.color;
+    bubble.style.color = status.textColor;
+    const nextChange = Math.floor(Math.random() * (86400000 - 30000)) + 30000;
+    setTimeout(updateStatusBubble, nextChange);
+  }
+  updateStatusBubble();
 
-    function updateStatusBubble() {
-      const bubble = document.getElementById("statusBubble");
-      const status = statusList[Math.floor(Math.random() * statusList.length)];
-      bubble.textContent = status.text;
-      bubble.style.backgroundColor = status.color;
-      bubble.style.color = status.textColor;
-      const nextChange = Math.floor(Math.random() * (86400000 - 30000)) + 30000;
-      setTimeout(updateStatusBubble, nextChange);
+  document.querySelector(".menu-toggle").addEventListener("click", () => {
+    const dropdown = document.querySelector(".dropdown");
+    dropdown.classList.toggle("show");
+  });
+  document.addEventListener("click", (e) => {
+    const menu = document.querySelector(".menu");
+    const dropdown = document.querySelector(".dropdown");
+    if (!menu.contains(e.target)) {
+      dropdown.classList.remove("show");
     }
-    updateStatusBubble();
+  });
 
-    document.querySelector('.menu-toggle').addEventListener('click', () => {
-      const dropdown = document.querySelector('.dropdown');
-      dropdown.classList.toggle('show');
+  function showCommonPhrases() {
+    const chatBox = document.getElementById("chatBox");
+    const fromHimMessages = [...chatBox.querySelectorAll(".message.from-him")].map((m) =>
+      m.textContent.replace(/\d{1,2}:\d{2}:\d{2}$/, "").trim()
+    );
+    const freqMap = {};
+    fromHimMessages.forEach((msg) => {
+      freqMap[msg] = (freqMap[msg] || 0) + 1;
     });
-    document.addEventListener('click', (e) => {
-      const menu = document.querySelector('.menu');
-      const dropdown = document.querySelector('.dropdown');
-      if (!menu.contains(e.target)) {
-        dropdown.classList.remove('show');
-      }
-    });
+    const sorted = Object.entries(freqMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
 
-    function showCommonPhrases() {
-      const chatBox = document.getElementById("chatBox");
-      const fromHimMessages = [...chatBox.querySelectorAll(".message.from-him")]
-        .map(m => m.textContent.replace(/\d{1,2}:\d{2}:\d{2}$/, "").trim());
-      const freqMap = {};
-      fromHimMessages.forEach(msg => {
-        freqMap[msg] = (freqMap[msg] || 0) + 1;
-      });
-      const sorted = Object.entries(freqMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
-      alert(sorted.length === 0
+    alert(
+      sorted.length === 0
         ? "暂无对方消息记录。"
-        : "对方常说的话：\n" + sorted.map(([msg, count]) => `${msg}（${count}次）`).join("\n"));
+        : "对方常说的话：\n" +
+            sorted.map(([msg, count]) => `${msg}（${count}次）`).join("\n")
+    );
+  }
+
+  function showDecision() {
+    const options = ["YES", "NO", "...OR?"];
+    const choice = options[Math.floor(Math.random() * options.length)];
+    alert("他的决策是：" + choice);
+  }
+
+  document.getElementById("moodButton").addEventListener("click", () => {
+    const moodValues = {
+      放松值: Math.floor(Math.random() * 100),
+      开心值: Math.floor(Math.random() * 100),
+      幸福值: Math.floor(Math.random() * 100),
+      平静值: Math.floor(Math.random() * 100),
+      伤心值: Math.floor(Math.random() * 100),
+    };
+    let msg = "哥哥现在的心情值：\n";
+    for (let key in moodValues) {
+      msg += `${key}：${moodValues[key]}%\n`;
     }
+    alert(msg);
+  });
 
-    function showDecision() {
-      const options = ["YES", "NO", "...OR?"];
-      const choice = options[Math.floor(Math.random() * options.length)];
-      alert("他的决策是：" + choice);
-    }
+  function calculateLoveDays() {
+    const start = new Date("2025-01-28");
+    const now = new Date();
+    const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+    document.getElementById("loveDays").textContent = `已经坠入爱河了 ${diff} 天`;
+  }
+  calculateLoveDays();
 
-    document.getElementById("moodButton").addEventListener("click", () => {
-      const moodValues = {
-        放松值: Math.floor(Math.random() * 100),
-        开心值: Math.floor(Math.random() * 100),
-        幸福值: Math.floor(Math.random() * 100),
-        平静值: Math.floor(Math.random() * 100),
-        伤心值: Math.floor(Math.random() * 100)
-      };
-      let msg = "哥哥现在的心情值：\n";
-      for (let key in moodValues) {
-        msg += `${key}：${moodValues[key]}%\n`;
-      }
-      alert(msg);
-    });
+  document.getElementById("saveChat").addEventListener("click", () => {
+    const chatBox = document.getElementById("chatBox");
+    const blob = new Blob([chatBox.innerText], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "chat_record.txt";
+    a.click();
+  });
 
-    function calculateLoveDays() {
-      const start = new Date("2025-01-28");
-      const now = new Date();
-      const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-      document.getElementById("loveDays").textContent = `已经坠入爱河了 ${diff} 天`;
-    }
-    calculateLoveDays();
+  function updateMessageStats(text) {
+    messageCount[text] = (messageCount[text] || 0) + 1;
+  }
+</script>
 
-    document.getElementById("saveChat").addEventListener("click", () => {
-      const chatBox = document.getElementById("chatBox");
-      const blob = new Blob([chatBox.innerText], { type: "text/plain;charset=utf-8" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "chat_record.txt";
-      a.click();
-    });
-
-    function updateMessageStats(text) {
-      messageCount[text] = (messageCount[text] || 0) + 1;
-    }
-  </script>
+ 
 </body>
 
 </html>
+
