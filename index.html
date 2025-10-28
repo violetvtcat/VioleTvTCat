@@ -368,17 +368,25 @@
     scrollChat();
     saveChatToLocal();
 
-    // 80% 概率回复
-    const willReply = Math.random() < 0.8;
-    if (!willReply) return;
+   // 80% 概率回复
+const willReply = Math.random() < 0.8;
+if (!willReply) return;
 
-    // 随机延迟 2~6 秒
-    const delay = Math.floor(Math.random() * 4000) + 2000;
-    const typing = document.getElementById("typingIndicator");
-    typing.style.display = "block";
+// 随机延迟 2~6 秒（开始打字）
+const delay = Math.floor(Math.random() * 4000) + 2000;
+const typing = document.getElementById("typingIndicator");
+typing.style.display = "block";
+
+setTimeout(() => {
+  typing.style.display = "none";
+  insertDateSeparatorIfNeeded();
+
+  // 随机发送 1~3 条消息
+  const replyCount = Math.floor(Math.random() * 3) + 1;
+  const delayBetweenReplies = 800; // 每条之间 0.8 秒
+
+  for (let i = 0; i < replyCount; i++) {
     setTimeout(() => {
-      typing.style.display = "none";
-      insertDateSeparatorIfNeeded();
       const reply = replies[Math.floor(Math.random() * replies.length)];
       const replyTime = new Date().toLocaleTimeString();
       const replyMsg = `<div class="message from-him">${reply}<div class="timestamp">${replyTime}</div></div>`;
@@ -386,8 +394,10 @@
       scrollChat();
       saveChatToLocal();
       updateMessageStats(reply);
-    }, delay);
+    }, i * delayBetweenReplies);
   }
+}, delay);
+
 
   function scrollChat() {
     const chatBox = document.getElementById("chatBox");
@@ -534,10 +544,37 @@
   function updateMessageStats(text) {
     messageCount[text] = (messageCount[text] || 0) + 1;
   }
+// 模拟对方离线留言（每隔一段时间随机生成留言）
+function generateOfflineMessages() {
+  // 获取上次访问时间
+  const lastVisit = localStorage.getItem("lastVisitTime");
+  const now = Date.now();
+  const chatBox = document.getElementById("chatBox");
+
+  // 如果上次访问时间存在，说明有离线时间
+  if (lastVisit) {
+    const diffHours = Math.floor((now - parseInt(lastVisit)) / (1000 * 60 * 60));
+    // 每离线一小时最多1~3条留言
+    const totalMessages = Math.min(diffHours, 10);
+    for (let i = 0; i < totalMessages; i++) {
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      const time = new Date().toLocaleTimeString();
+      const replyMsg = `<div class="message from-him">${reply}<div class="timestamp">${time}</div></div>`;
+      chatBox.innerHTML += replyMsg;
+    }
+    saveChatToLocal();
+  }
+
+  // 更新访问时间
+  localStorage.setItem("lastVisitTime", now.toString());
+}
+window.addEventListener("load", generateOfflineMessages);
+
 </script>
 
  
 </body>
 
 </html>
+
 
